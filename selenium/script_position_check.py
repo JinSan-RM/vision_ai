@@ -5,6 +5,29 @@ from selenium.webdriver.support import expected_conditions as EC
 import base64
 import time
 import openai
+import pandas as pd
+import os.path
+
+
+def make_dataframe_to_csv(col_1 : list, col_2 : list):
+    csv_file_name = './script_pension_result.csv'
+    
+    if os.path.isfile("./" + csv_file_name):
+        previos_df = pd.read_csv("./" + csv_file_name, index_col=False)
+        new_df = pd.DataFrame({"Script" : ["new_script"], "Result_from_GPT" : ["new_gpt_result"]})
+        current_df = pd.DataFrame({"Script" : col_1, "Result_from_GPT" : col_2})
+        current_df = current_df.replace('\n', '')
+        
+        modify_current_df = pd.concat([new_df, current_df])
+        
+        combined_df = pd.concat([previos_df, modify_current_df])
+        combined_df.to_csv(csv_file_name, encoding = 'utf-8-sig', index=False)
+        
+    else:
+        df = pd.DataFrame({"Script" : col_1, "Result_from_GPT" : col_2})
+        modify_df = df.replace('\n', '')
+        
+        modify_df.to_csv(csv_file_name, encoding = 'utf-8-sig', index=False)
 
 def script_position_check(url : str):
     print(url)
@@ -47,6 +70,7 @@ def script_position_check(url : str):
     driver.quit()
     word = openai_script_analysis(script_list)
     print(word, "<=====word")
+    make_dataframe_to_csv(script_list, word)
     return "sucess"
 
 
@@ -96,6 +120,9 @@ def openai_script_analysis(data):
         return None    
 
 if __name__ == '__main__':
-    result = script_position_check('https://www.daprs.com/')
-    print(result)
-    
+        
+    sites = ["http://nobleglamping.com/", "http://www.onthebeachpoolvilla.com/", "https://www.pinevallry.co.kr", "http://삐삐키즈풀빌라.com/", "https://jebuilmare.modoo.at"]
+
+    for site in sites:
+        result = script_position_check(site)
+        print(result)
