@@ -7,14 +7,26 @@ import time
 import openai
 import pandas as pd
 import os.path
+import gspread
+from gspread_dataframe import set_with_dataframe
+
+
+# json_file_path = 'C:/Users/weven/Desktop/AITEST/vision_ai/selenium/mailing-421207-c0e8e568b22a.json'
+# gc = gspread.service_account(json_file_path)
+# spreadsheet_url = 'https://docs.google.com/spreadsheets/d/135wSfAC7Rp9ct3bbvxC090AVqy4La4c5sTDl1B0l26A/edit#gid=0'
+# doc = gc.open_by_url(spreadsheet_url)
+# worksheet_data = doc.worksheet('태그')
 
 
 def make_dataframe_to_excel(col_1: list, col_2: list, url: str):
+    print("start excel download and google sheet")
     excel_file_name = 'script_pension_result.xlsx'
     # URL을 시트 이름으로 변환하기 위한 정리 작업
     sheet_name = url.replace('http://', '').replace('https://', '').replace('/', '_').replace('.', '_')
 
+
     if os.path.isfile(excel_file_name):
+        
         # 기존 엑셀 파일이 있을 때 처리
         with pd.ExcelWriter(excel_file_name, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
             # 새로운 데이터를 DataFrame에 저장
@@ -22,6 +34,8 @@ def make_dataframe_to_excel(col_1: list, col_2: list, url: str):
             current_df = current_df.replace('\n', '')
             # 새 시트에 작성
             current_df.to_excel(writer, sheet_name=sheet_name, index=False)
+        print("set_with_dataframe")
+
     else:
         # 처음 엑셀 파일을 생성할 때
         with pd.ExcelWriter(excel_file_name, engine='openpyxl') as writer:
@@ -29,6 +43,7 @@ def make_dataframe_to_excel(col_1: list, col_2: list, url: str):
             modify_df = df.replace('\n', '')
             # 새로운 시트에 저장
             modify_df.to_excel(writer, sheet_name=sheet_name, index=False)
+        print("set_with_dataframe")
     # if os.path.isfile("./" + csv_file_name):
     #     previos_df = pd.read_csv("./" + csv_file_name, index_col=False)
     #     new_df = pd.DataFrame({"Script" : ["new_script"], "Result_from_GPT" : ["new_gpt_result"]})
@@ -144,18 +159,18 @@ result_list1 = []
 result_list2 = []
 
 if __name__ == '__main__':
-    for url in pension_site_list:
-        result = script_position_check(url)
-        result_list1.extend(result)  # 각 사이트 결과를 result_list에 추가
+    # for url in pension_site_list:
+    #     result = script_position_check(url)
+    #     result_list1.extend(result)  # 각 사이트 결과를 result_list에 추가
     
-    for url in pension_site_list:
+    for url in hosital_site_list:
         result = script_position_check(url)
         result_list2.extend(result)  # 각 사이트 결과를 result_list에 추가
     
     # 모든 결과를 하나의 엑셀 파일로 저장
-    df1 = pd.DataFrame(result_list1, columns=['Script Content'])
+    # df1 = pd.DataFrame(result_list1, columns=['Script Content'])
     df2 = pd.DataFrame(result_list2, columns=['Script Content'])
-    df1.to_excel(f'{result_list1}output.xlsx', index=False)
+    # df1.to_excel(f'{result_list1}output.xlsx', index=False)
     df2.to_excel(f'{result_list2}output.xlsx', index=False)
     print("Results saved to Excel.")
     
