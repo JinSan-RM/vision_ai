@@ -33,7 +33,9 @@ def make_dataframe_to_excel(col_1: list, col_2: list, url: str):
     sheet_name = url.replace('http://', '').replace('https://', '').replace('/', '_').replace('.', '_')
 
 
+
     if os.path.isfile(excel_file_name):
+        
         
         # 기존 엑셀 파일이 있을 때 처리
         with pd.ExcelWriter(excel_file_name, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
@@ -42,6 +44,8 @@ def make_dataframe_to_excel(col_1: list, col_2: list, url: str):
             current_df["Script"] = current_df["Script"].str.replace('\n', '')
             # 새 시트에 작성
             current_df.to_excel(writer, sheet_name=sheet_name, index=False)
+        print("set_with_dataframe")
+
         print("set_with_dataframe")
 
     else:
