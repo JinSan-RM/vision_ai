@@ -20,14 +20,14 @@ import os.path
 ### ==============================
 # Please Don't forget to input OpenAI API key
 ### ==============================
-# openai.api_key =
+# openai.api_key = 
 
 
 def make_dataframe_to_excel(col_1: list, col_2: list, url: str):
     print("start excel download and google sheet")
     
     # 저장할 엑셀 파일이름 설정
-    excel_file_name = 'script_shoping_result.xlsx'
+    excel_file_name = 'script_hospital_result.xlsx'
     
     # URL을 시트 이름으로 변환하기 위한 정리 작업
     sheet_name = url.replace('http://', '').replace('https://', '').replace('/', '_').replace('.', '_')
@@ -44,8 +44,6 @@ def make_dataframe_to_excel(col_1: list, col_2: list, url: str):
             current_df["Script"] = current_df["Script"].str.replace('\n', '')
             # 새 시트에 작성
             current_df.to_excel(writer, sheet_name=sheet_name, index=False)
-        print("set_with_dataframe")
-
         print("set_with_dataframe")
 
     else:
@@ -116,12 +114,24 @@ def script_position_check(url : str):
         if innerHTML == None:
             script_list.append(script.get_attribute('src'))
     
-    print(script_list, "<<<====script_list")
     script_list = list(filter(None, script_list))
+    new_script_list = []
+    
+    # 혹시 filter로 걸러지지 않은 nan으로 인한 float을 제거
+    for script in script_list:
+        if type(script) != str:
+            continue
+        script = script.split(".js")[0] + ".js"
+        new_script_list.append(script)
+    
+    
+    print(new_script_list, "<<<====script_list")
+    ##### NOTE : 여기서 filter를 해줬는데 nan은 필터가 안된 것으로보임. 다른 곳에서 테스트
+    # script_list = list(filter(None, script_list))
     driver.quit()
-    word = openai_script_analysis(script_list)
+    word = openai_script_analysis(new_script_list)
     print(word, "<=====word")
-    make_dataframe_to_excel(script_list, word, url)
+    make_dataframe_to_excel(new_script_list, word, url)
     return "sucess"
 
 
@@ -153,6 +163,8 @@ def openai_script_analysis(data):
         word = []
         try:
             for i in data:
+                if i == None:
+                    continue
                 response = openai.chat.completions.create(
                     model="gpt-3.5-turbo-1106",
                     
@@ -161,7 +173,7 @@ def openai_script_analysis(data):
                         {"role": "system", "content": """Your role is a script interpreter. Please create something that interprets a script 
                          and extracts just the values in a word tag format to understand what role the interpreted script serves. 
                          And if the input is only javascript file, Tell me the functionality of the library that the script calls. 
-                         결과는 한글로 해석해줘"""},
+                         결과는 한 문장으로 요약해서 한글로 해석해줘"""},
                         {"role": "user", "content": i }
                     ],
                     temperature=0.5
@@ -175,11 +187,11 @@ def openai_script_analysis(data):
         print(word)
         return word
     else:
-        return "Too Long"    
+        return None
 
 
 pension_site_list = ['https://monacampark.co.kr/', 'https://myeongranghouse.modoo.at/', 'http://www.sbpension.net/', 'https://durbanhill.modoo.at/', 'https://www.welchon.com/', 'http://www.marinuspoolvila.com/', 'http://www.hileisure.net/', 'http://xn--jk1bl1ki6bl6gvuanj892i.com/', 'https://sk0809h.modoo.at/', 'http://boracaypension.com/']
-hosital_site_list = ['http://www.brjkmc.co.kr/b/', 'https://www.daprs.com/', 'https://www.idhospital.com/?']
+hosital_site_list = ['http://www.brjkmc.co.kr/b/', 'https://www.daprs.com/', 'https://www.idhospital.com/']
 shoping_site_list = ["https://attrangs.co.kr/", "https://loveparis.net/", "https://sonyunara.com/", "https://www.canmart.co.kr/", "https://classic-blanc.com/"]
 result_list1 = []
 result_list2 = []
@@ -192,12 +204,12 @@ if __name__ == '__main__':
     #     result = script_position_check(url)
     #     result_list2.extend(result)  # 사용 시 script_position_check의 return값 조정 후 extend() -> concat()
     
-    # for url in hosital_site_list:
-    #     result = script_position_check(url)
+    for url in hosital_site_list:
+        result = script_position_check(url)
     #     result_list2.extend(result)  # 사용 시 script_position_check의 return값 조정 후 extend() -> concat()
  
-    for url in shoping_site_list:
-        result = script_position_check(url)
+    # for url in shoping_site_list:
+    #     result = script_position_check(url)
     #    result_list3.extend(result)  # 사용 시 script_position_check의 return값 조정 후 extend() -> concat()
     
     # ======== NOTE : 아래 부분을 활성화하려면 script_position_check의 return 값을 
