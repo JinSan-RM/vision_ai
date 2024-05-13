@@ -10,13 +10,16 @@ import tensorflow as tf
 import numpy as np
 from io import BytesIO
 import os, requests, cv2
-from ImgCrtl import ImgCtrl
+import ImgCrtl
 
 app = FastAPI()
 
 @app.get('/')
-def mainDef( source : str):
-    ImgPixcel = ImgCtrl.imageUrlToPixels( source )
+def mainDef( source : str ):
+    source = source
+    url = source
+    ImgPath = ImgCrtl.downloadImage( url )
+    ImgPixcel = ImgCrtl.imageUrlToPixels( source )
     
     return 
 
