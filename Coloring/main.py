@@ -24,16 +24,16 @@ def mainDef( source : str ):
     output_data = []
     url = source
     # ImgPath = ImgCtrl.downloadImage( url )
-    Img = ImgCtrl.imageUrlToPixels( source )
+    Img = ImgCtrl.ImgCtrl_module.imageUrlToPixels( source )
     results = model(Img) # image 인풋
     
     for result in results:
-        data = AIResult.classbox(result)
-        data = AIResult.process_boxes(data)
+        data = AIResult.AIResult_module.classbox(result)
+        data = AIResult.AIResult_module.process_boxes(data)
         output_data.append(data)
     output_data = output_data[0]
         
-    img = Boundary.ImgBoundarySketch(Img, output_data)
+    img = Boundary.Boundary_module.ImgBoundarySketch(Img, output_data)
     cv2.imwrite('/code/Img/processed_image.jpg', img)
     _, encoded_image = cv2.imencode('.jpg', img)
     image_stream = io.BytesIO(encoded_image.tobytes())
