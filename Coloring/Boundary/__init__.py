@@ -1,1 +1,1 @@
-from . import Boundary_module
+from .Boundary_module import ImgBoundarySketch
