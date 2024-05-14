@@ -3,7 +3,7 @@
     #   AI 결과값에 대한 추출 과정 (minX, minY, maxX, maxY)
     #
     #   ======================================================
-    
+
 def classbox(results):
     dataList = []
     for result in results:

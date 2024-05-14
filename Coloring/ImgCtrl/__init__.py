@@ -1,6 +1,6 @@
 # from . import ImgCtrl
 # ImgCrtl/__init__.py
-from .ImgCtrl import downloadImage, imageUrlToPixels
+from . import ImgCtrl_module
 
 # ImgCtrl.downloadImage(  )
 # ImgCtrl.imageUrlToPixels(  )
