@@ -1,1 +1,1 @@
-from . import AIResult_module
+from .AIResult_module import classbox, process_boxes
