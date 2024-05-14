@@ -1,9 +1,8 @@
-    #   =========================================
-    #
-    #   outputData 의 1은 Text, 2는 Image g
-    #   확정성을 위한 API 및 Flask 까지 고려
-    #
-    #   =========================================
+#  ======================================================================
+#
+#  outputData 의 1은 Text, 2는 Image 확정성을 위한 API 및 Flask 까지 고려
+#
+#  ======================================================================
 
 from fastapi import FastAPI, Response
 from fastapi.responses import StreamingResponse
