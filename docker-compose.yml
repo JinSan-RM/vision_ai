@@ -20,7 +20,7 @@ services:
     # docker build
     build: # 빌드
       # 사용할 Dockerfile위치
-      context: ./Coloring
+      context: ./similarity_analyzer
       # 사용할 Dockerfile이름
       dockerfile: Dockerfile
     # volume지정 ( -v )
@@ -28,7 +28,7 @@ services:
       # node_modules는 컨테이너의 workdir에서 사용
       # - /usr/src/app/node_modules
       # 이외에 모든 파일 참조
-      - ./Coloring:/code
+      - ./similarity_analyzer:/code
     
     # 컨테이너가 실행될때 사용할 명령어
     command: uvicorn main:app --reload --host 0.0.0.0 --port 8585
