@@ -40,8 +40,6 @@ def ssim_similarity_calculator(image1_resized_n_gray, image2_resized_n_gray):
     list1 = []
     list2 = []
     size = []
-    image1_resized_n_gray = cv2.cvtColor(image1_resized_n_gray, cv2.COLOR_BGR2GRAY)
-    image2_resized_n_gray = cv2.cvtColor(image2_resized_n_gray, cv2.COLOR_BGR2GRAY)
     list1 = image1_resized_n_gray.shape
     list2 = image2_resized_n_gray.shape
     if list1[0] >= list2[0]:
@@ -53,8 +51,18 @@ def ssim_similarity_calculator(image1_resized_n_gray, image2_resized_n_gray):
         size.append(list1[1])
     else:
         size.append(list2[1])
+        
     image1_resized_n_gray = cv2.resize(image1_resized_n_gray, (size[0], size[1]))
     image2_resized_n_gray = cv2.resize(image2_resized_n_gray, (size[0], size[1]))
+    cv2.imwrite('/code/Img/a3.jpg', image1_resized_n_gray)
+    cv2.imwrite('/code/Img/a4.jpg', image2_resized_n_gray)
+    
+    
+    
+    
+    image1_resized_n_gray = cv2.cvtColor(image1_resized_n_gray, cv2.COLOR_BGR2GRAY)
+    image2_resized_n_gray = cv2.cvtColor(image2_resized_n_gray, cv2.COLOR_BGR2GRAY)
+    
     print(image1_resized_n_gray.shape, "<======size1")
     print(image2_resized_n_gray.shape, "<======size2")
     (ssim_similarity, diff) = ssim(image1_resized_n_gray, image2_resized_n_gray, full=True)
