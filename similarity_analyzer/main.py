@@ -52,7 +52,9 @@ def mainDef( input_source : str, match_source : str ):
     
     px_V = Similarity.jaccard_similarity.px_similarity(in_sketch, mat_sketch)
     px_ssim = Similarity.ssim_similarity.ssim_similarity_calculator(in_sketch, mat_sketch)
+    px_orb = Similarity.ssim_similarity.feature_matching_with_shi_tomasi(in_sketch, mat_sketch)
     px_FID = Similarity.FID.FID_score(in_sketch, mat_sketch)
+    px_block = Similarity.ssim_similarity.feature_matching_with_blocks(in_sketch, mat_sketch)
     # print(px_V)
     # Feature matching
     

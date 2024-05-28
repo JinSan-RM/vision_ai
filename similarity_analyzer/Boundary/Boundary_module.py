@@ -24,7 +24,7 @@ def ImgBoundarySketch(img, output_data):
         
         if class_id == 1:
             # cv2.rectangle(img, (int(start_x), int(start_y)), (int(end_x), int(end_y)), (255, 255, 255), thickness=cv2.FILLED)
-            cv2.ellipse(img, (int((start_x + end_x) / 2), int((start_y + end_y) / 2)), (int((end_x - start_x) / 2), int((end_y - start_y) / 2)), 0, 0, 360,(105, 105, 105), thickness=1)
+            # cv2.ellipse(img, (int((start_x + end_x) / 2), int((start_y + end_y) / 2)), (int((end_x - start_x) / 2), int((end_y - start_y) / 2)), 0, 0, 360,(105, 105, 105), thickness=1)
             # cv2.rectangle(img, (int(start_x), int(start_y)), (int(end_x), int(end_y)), (220, 220, 200), thickness=1)
             pass
         elif class_id == 2:
