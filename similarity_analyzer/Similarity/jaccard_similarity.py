@@ -131,4 +131,6 @@ def px_similarity( Img_orig, Img_mat ):
     print(f"Red overlap area: {Ro} pixels ({RoR:.2%} of total pixels {Tp})")
     
     ApxC = (To + Ro) / Tp
+    cv2.imwrite(f'/code/Img/{Img_orig[:10]}.jpg', Img_orig)
+    cv2.imwrite(f'/code/Img/{Img_mat[:10]}.jpg', Img_mat)
     return ApxC

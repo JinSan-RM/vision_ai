@@ -19,7 +19,7 @@ RUN apt-get install -f
 
 
 # # 필요한 Python 패키지 설치
-RUN pip install fastapi uvicorn Pillow opencv-python requests tensorflow scikit-image
+RUN pip install fastapi uvicorn Pillow opencv-python requests tensorflow scikit-image torch pytorch-fid-wrapper
 
 
 # 컨테이너 내에서 작업할 디렉토리 생성
