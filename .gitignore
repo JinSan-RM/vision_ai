@@ -18,3 +18,5 @@ Coloring/AIResult/__pycache__/AIResult_module.cpython-310.pyc
 Coloring/Boundary/__pycache__/Boundary_module.cpython-310.pyc
 Coloring/ImgCtrl/__pycache__/ImgCtrl_module.cpython-310.pyc
 Coloring/ImgCtrl/__pycache__/qwer.cpython-310.pyc
+similarity_analyzer/**/*.pyc
+similarity_analyzer/Img

@@ -49,12 +49,10 @@ def mainDef( input_source : str, match_source : str ):
     in_sketch = Boundary.Boundary_module.ImgBoundarySketch(in_Img, in_out_data)        
     mat_sketch = Boundary.Boundary_module.ImgBoundarySketch(mat_Img, mat_out_data)
 
-    px_V = Similarity.jaccard_similarity.px_similarity(in_sketch, mat_sketch)
-    print(px_V)
+    jac_V = Similarity.jaccard_similarity.jaccard_similarity_calculator(in_sketch, mat_sketch)
+    print("Jaccard : ", jac_V)
+    ssim_V = Similarity.ssim_similarity.ssim_similarity_calculator(in_sketch, mat_sketch)
+    print("SSIM : ", ssim_V)
+    
  
-    return {"value " : px_V}
-
-
-
-
-
+    return {"Jaccard value " : jac_V, "SSIM : " : ssim_V}
