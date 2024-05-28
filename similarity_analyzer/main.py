@@ -100,6 +100,7 @@ def mainDef( input_source : str, match_source : str ):
     cv2.imwrite('/code/Img/in_sketch.jpg', in_sketch)
     cv2.imwrite('/code/Img/mat_sketch.jpg', mat_sketch)
     img_matches, num_matches = Similarity.ssim_similarity.feature_matching(in_sketch, mat_sketch)
+    
     if img_matches is not None:
         print(f'Number of matches: {num_matches}')
         # Normalize the ORB match score
