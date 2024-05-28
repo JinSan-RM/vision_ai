@@ -83,24 +83,27 @@ def ssim_similarity_calculator(image1, image2):
     return ssim_similarity
 
 def feature_matching(img1, img2):
-    list1 = []
-    list2 = []
-    size = []
-    list1 = img1.shape
-    list2 = img2.shape
-    if list1[0] >= list2[0]:
-        size.append(list1[0])
-    else:
-        size.append(list2[0])
+    target_size = (640, 640)
+    # list1 = []
+    # list2 = []
+    # size = []
+    # list1 = img1.shape
+    # list2 = img2.shape
+    # if list1[0] >= list2[0]:
+    #     size.append(list1[0])
+    # else:
+    #     size.append(list2[0])
         
-    if list1[1] >= list2[1]:
-        size.append(list1[1])
-    else:
-        size.append(list2[1])
+    # if list1[1] >= list2[1]:
+    #     size.append(list1[1])
+    # else:
+    #     size.append(list2[1])
     
     
-    img1 = cv2.resize(img1, (size[0], size[1]))
-    img2 = cv2.resize(img2, (size[0], size[1]))
+    # img1 = cv2.resize(img1, (size[0], size[1]))
+    # img2 = cv2.resize(img2, (size[0], size[1]))
+    img1 = resize_with_aspect_ratio(img1, target_size)
+    img2 = resize_with_aspect_ratio(img2, target_size)
     # ORB 파라미터 조정
     orb = cv2.ORB_create(nfeatures=500, scaleFactor=1.2, nlevels=8, edgeThreshold=0, firstLevel=0, WTA_K=2, scoreType=cv2.ORB_HARRIS_SCORE, patchSize=5, fastThreshold=20)
     
@@ -318,43 +321,43 @@ def divide_image(image, divisions=3):
     
     return blocks
 
-def feature_matching_with_blocks(img1, img2):
-    target_size = (640, 640)
-    img1 = resize_with_aspect_ratio(img1, target_size)
-    img2 = resize_with_aspect_ratio(img2, target_size)
-    # ORB 객체 생성 및 설정
-    orb = cv2.ORB_create(nfeatures=500, scaleFactor=1.2, nlevels=8, edgeThreshold=0, firstLevel=0, WTA_K=2, scoreType=cv2.ORB_HARRIS_SCORE, patchSize=5, fastThreshold=20)
+# def feature_matching_with_blocks(img1, img2):
+#     target_size = (640, 640)
+#     img1 = resize_with_aspect_ratio(img1, target_size)
+#     img2 = resize_with_aspect_ratio(img2, target_size)
+#     # ORB 객체 생성 및 설정
+#     orb = cv2.ORB_create(nfeatures=500, scaleFactor=1, nlevels=8, edgeThreshold=0, firstLevel=0, WTA_K=2, scoreType=cv2.ORB_HARRIS_SCORE, patchSize=5)
     
-    # 이미지를 9등분으로 분할
-    blocks1 = divide_image(img1)
-    blocks2 = divide_image(img2)
+#     # 이미지를 9등분으로 분할
+#     blocks1 = divide_image(img1)
+#     blocks2 = divide_image(img2)
     
-    matches_list = []
-    total_matches = 0
+#     matches_list = []
+#     total_matches = 0
     
-    for block1, block2 in zip(blocks1, blocks2):
-        kp1, des1 = orb.detectAndCompute(block1, None)
-        kp2, des2 = orb.detectAndCompute(block2, None)
+#     for block1, block2 in zip(blocks1, blocks2):
+#         kp1, des1 = orb.detectAndCompute(block1, None)
+#         kp2, des2 = orb.detectAndCompute(block2, None)
         
-        if des1 is not None and des2 is not None:
-            bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-            matches = bf.match(des1, des2)
-            matches = sorted(matches, key=lambda x: x.distance)
-            total_matches += len(matches)
-            matches_list.append((block1, kp1, block2, kp2, matches))
+#         if des1 is not None and des2 is not None:
+#             bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+#             matches = bf.match(des1, des2)
+#             matches = sorted(matches, key=lambda x: x.distance)
+#             total_matches += len(matches)
+#             matches_list.append((block1, kp1, block2, kp2, matches))
     
-    # 매칭 결과 시각화
-    img_matches_list = []
-    for block1, kp1, block2, kp2, matches in matches_list:
-        img_matches = cv2.drawMatches(block1, kp1, block2, kp2, matches, None, flags=cv2.DRAW_MATCHES_FLAGS_NOT_DRAW_SINGLE_POINTS)
-        img_matches_list.append(img_matches)
+#     # 매칭 결과 시각화
+#     img_matches_list = []
+#     for block1, kp1, block2, kp2, matches in matches_list:
+#         img_matches = cv2.drawMatches(block1, kp1, block2, kp2, matches, None, flags=cv2.DRAW_MATCHES_FLAGS_NOT_DRAW_SINGLE_POINTS)
+#         img_matches_list.append(img_matches)
     
-    # 결과 저장
-    for idx, img_matches in enumerate(img_matches_list):
-        cv2.imwrite(f'/code/Img/img_matches_block_{idx+1}.jpg', img_matches)
+#     # 결과 저장
+#     for idx, img_matches in enumerate(img_matches_list):
+#         cv2.imwrite(f'/code/Img/img_matches_block_{idx+1}.jpg', img_matches)
     
-    # 디버깅 정보 출력
-    print(f'Total number of matches: {total_matches}')
+#     # 디버깅 정보 출력
+#     print(f'Total number of matches: {total_matches}')
     
 def resize_with_aspect_ratio(image, target_size):
     # 원본 이미지 크기
