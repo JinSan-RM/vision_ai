@@ -68,42 +68,44 @@ def calculate_overlap(image1, image2, lower_bound, upper_bound):
 
 def jaccard_similarity_calculator(image1_resized, image2_resized):
     
-    image1_resized = cv2.resize(image1_resized, (1920, 1080))
-    image2_resized = cv2.resize(image2_resized, (1920, 1080))
+    # image1_resized = cv2.resize(image1_resized, (1920, 1080))
+    # image2_resized = cv2.resize(image2_resized, (1920, 1080))
+    list1 = []
+    list2 = []
+    size = []
+    list1 = image1_resized.shape
+    list2 = image2_resized.shape
+    if list1[0] >= list2[0]:
+        size.append(list1[0])
+    else:
+        size.append(list2[0])
+        
+    if list1[1] >= list2[1]:
+        size.append(list1[1])
+    else:
+        size.append(list2[1])
+        
+    image1_resized = cv2.resize(image1_resized, (size[0], size[1]))
+    image2_resized = cv2.resize(image2_resized, (size[0], size[1]))   
+    
     cv2.imwrite('/code/Img/a7.jpg', image1_resized)
     cv2.imwrite('/code/Img/a8.jpg', image2_resized)
     # image1_resized, image2_resized = cv2.cvtColor(image1_resized, cv2.COLOR_BGR2GRAY), cv2.cvtColor(image2_resized, cv2.COLOR_BGR2GRAY)
 
     # 바이너리 마스크 생성
-    # threshold = 128
-    # binary_mask1 = (image1_resized > threshold).astype(np.uint8)
-    # binary_mask2 = (image2_resized > threshold).astype(np.uint8)
+    threshold = 128
+    binary_mask1 = (image1_resized > threshold).astype(np.uint8)
+    binary_mask2 = (image2_resized > threshold).astype(np.uint8)
 
     # 공통 픽셀 및 합동 픽셀 개수 계산
-    # common_pixels = np.sum(binary_mask1 & binary_mask2)
-    # total_pixels = np.sum(binary_mask1 | binary_mask2)
+    common_pixels = np.sum(binary_mask1 & binary_mask2)
+    total_pixels = np.sum(binary_mask1 | binary_mask2)
 
     # Jaccard similarity 계산
-    # jaccard_similarity = common_pixels / total_pixels
-    blue_lower = np.array([115,170,100])
-    blue_upper = np.array([115,170,130])
+    jaccard_similarity = common_pixels / total_pixels
 
-    # 빨간색 영역의 범위 지정
-    red_lower = np.array([150,200,135])
-    red_upper = np.array([150,200,165])
-
-    # 파란색 겹치는 영역 계산
-    blue_overlap, blue_overlap_ratio = calculate_overlap(image1_resized, image2_resized, blue_lower, blue_upper)
-
-    # 빨간색 겹치는 영역 계산
-    red_overlap, red_overlap_ratio = calculate_overlap(image1_resized, image2_resized, red_lower, red_upper)
-
-    print(f"Blue overlap area: {blue_overlap} pixels ({blue_overlap_ratio:.2%} of total pixels)")
-    print(f"Red overlap area: {red_overlap} pixels ({red_overlap_ratio:.2%} of total pixels)")
-
-    # print("Jaccard similarity:", jaccard_value)
-    # print("Jaccard similarity:", jaccard_similarity)
-    return "sucess"
+    print("Jaccard similarity:", jaccard_similarity)
+    return jaccard_similarity
 
 def px_similarity( Img_orig, Img_mat ):
     

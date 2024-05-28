@@ -54,3 +54,5 @@ similarity_analyzer/AIResult/__pycache__/AIResult.cpython-311.pyc
 similarity_analyzer/Boundary/__pycache__/__init__.cpython-310.pyc
 similarity_analyzer/Boundary/__pycache__/Boundary_module.cpython-310.pyc
 similarity_analyzer/Boundary/__pycache__/Boundary.cpython-310.pyc
+similarity_analyzer/**/*.pyc
+similarity_analyzer/Img
