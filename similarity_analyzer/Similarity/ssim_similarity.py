@@ -105,54 +105,75 @@ def feature_matching(img1, img2):
     img1 = resize_with_aspect_ratio(img1, target_size)
     img2 = resize_with_aspect_ratio(img2, target_size)
     # ORB 파라미터 조정
-    orb = cv2.ORB_create(nfeatures=500, scaleFactor=1.2, nlevels=8, edgeThreshold=0, firstLevel=0, WTA_K=2, scoreType=cv2.ORB_HARRIS_SCORE, patchSize=5, fastThreshold=20)
+    scaleFactors = [1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
+    nlevelss = range(8, 12, 1)
+    edgeThresholds = range(20, 50, 1)
+    patchSizes = range(20, 50, 1)
     
-    kp1, des1 = orb.detectAndCompute(img1, None)
-    kp2, des2 = orb.detectAndCompute(img2, None)
-    
-    # Ensure descriptors are not None and are continuous
-    if des1 is not None:
-        des1 = np.ascontiguousarray(des1)
-    if des2 is not None:
-        des2 = np.ascontiguousarray(des2)
+    import itertools
+    for pair in itertools.product(scaleFactors, nlevelss):
+        for edgeThreshold, patchSize in zip(edgeThresholds, patchSizes):
+            
+            print(f'/code/Img/img_matches_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}')
+            
+            orb = cv2.ORB_create(nfeatures=500, 
+                                scaleFactor=pair[0], 
+                                nlevels=pair[1], 
+                                edgeThreshold=edgeThreshold, 
+                                firstLevel=0, 
+                                WTA_K=2, 
+                                scoreType=cv2.ORB_HARRIS_SCORE, 
+                                patchSize=patchSize, 
+                                fastThreshold=20)
+            
+            kp1, des1 = orb.detectAndCompute(img1, None)
+            kp2, des2 = orb.detectAndCompute(img2, None)
+            
+            # Ensure descriptors are not None and are continuous
+            if des1 is not None:
+                des1 = np.ascontiguousarray(des1)
+            if des2 is not None:
+                des2 = np.ascontiguousarray(des2)
 
-    if des1 is None or des2 is None:
-        print("No descriptors found in one of the images.")
-        return None, 0
-    
-    # 인덱스 파라미터 설정 ---①
-    FLANN_INDEX_LSH = 6
-    
-    index_params= dict(algorithm = FLANN_INDEX_LSH,
-                    table_number = 6,
-                    key_size = 12,
-                    multi_probe_level = 1)
-    
-    search_params=dict(checks=32)
-    matcher = cv2.FlannBasedMatcher(index_params, search_params)
-    matches = matcher.match(des1, des2)
-    # 매칭 그리기
-    # res = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, \
-    #             flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-    
-    # cv2.imwrite('/code/Img/res1.jpg', res)
-    # 디버깅 정보 출력
-    print(f'Number of keypoints in image 1: {len(kp1) if kp1 is not None else 0}')
-    print(f'Number of keypoints in image 2: {len(kp2) if kp2 is not None else 0}')
+            if des1 is None or des2 is None:
+                print("No descriptors found in one of the images.")
+                continue
+                return None, 0
+            
+            # 인덱스 파라미터 설정 ---①
+            # FLANN_INDEX_LSH = 6
+            
+            # index_params= dict(algorithm = FLANN_INDEX_LSH,
+            #                 table_number = 6,
+            #                 key_size = 12,
+            #                 multi_probe_level = 1)
+            
+            # search_params=dict(checks=32)
+            # matcher = cv2.FlannBasedMatcher(index_params, search_params)
+            # matches = matcher.match(kp1, kp2)
+            # # 매칭 그리기
+            # res = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, \
+            #             flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+            
+            # cv2.imwrite('/code/Img/res1.jpg', res)
+            
+            # 디버깅 정보 출력
+            print(f'Number of keypoints in image 1: {len(kp1) if kp1 is not None else 0}')
+            print(f'Number of keypoints in image 2: {len(kp2) if kp2 is not None else 0}')
 
-    if des1 is None or des2 is None:
-        print("No descriptors found in one of the images.")
-        return None, 0
+            if des1 is None or des2 is None:
+                print("No descriptors found in one of the images.")
+                return None, 0
 
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    matches = bf.match(des1, des2)
-    matches = sorted(matches, key=lambda x: x.distance)
+            bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+            matches = bf.match(des1, des2)
+            matches = sorted(matches, key=lambda x: x.distance)
 
-    # 디버깅 정보 출력
-    print(f'Number of matches: {len(matches)}')
+            # 디버깅 정보 출력
+            print(f'Number of matches: {len(matches)}')
 
-    img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, flags=cv2.DRAW_MATCHES_FLAGS_NOT_DRAW_SINGLE_POINTS)
-    cv2.imwrite('/code/Img/img_matches.jpg', img_matches)
+            img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, flags=cv2.DRAW_MATCHES_FLAGS_NOT_DRAW_SINGLE_POINTS)
+            cv2.imwrite(f'/code/Img/test1/img_matches_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}.jpg', img_matches)
     return img_matches, len(matches)
 
 

@@ -12,7 +12,7 @@ import numpy as np
 def ImgBoundarySketch(img, output_data):
     img_Width, img_Height = img.shape[:2]
     print(img_Width, img_Height, "<=========shape")
-    cv2.rectangle(img, (0, 0), (1920, 2000), (0, 0, 0), thickness = cv2.FILLED)
+    cv2.rectangle(img, (0, 0), (1920, 2000), (255, 255, 255), thickness = cv2.FILLED)
     if img is None:
         print("로딩 실패")
     for detection in output_data:
@@ -29,7 +29,7 @@ def ImgBoundarySketch(img, output_data):
             pass
         elif class_id == 2:
             # cv2.rectangle(img, (int(start_x), int(start_y)), (int(end_x), int(end_y)), (255, 255, 255), thickness=cv2.FILLED)
-            cv2.rectangle(img, (int(start_x), int(start_y)), (int(end_x), int(end_y)), (105, 105, 105), thickness=1)
+            cv2.rectangle(img, (int(start_x), int(start_y)), (int(end_x), int(end_y)), (105, 105, 105), thickness=cv2.FILLED)
             # cv2.putText(image, str(class_id), (start_x, start_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
     
     
