@@ -5,6 +5,7 @@
 #  ======================================================================
 
 import Similarity.FID
+import Similarity.findcounter
 import Similarity.jaccard_similarity
 import Similarity.sift_similarity
 from fastapi import FastAPI, Response
@@ -54,6 +55,35 @@ def mainDef( input_source : str, match_source : str ):
     px_ssim = Similarity.ssim_similarity.ssim_similarity_calculator(in_sketch, mat_sketch)
     px_orb = Similarity.ssim_similarity.feature_matching_with_shi_tomasi(in_sketch, mat_sketch)
     px_FID = Similarity.FID.FID_score(in_sketch, mat_sketch)
+    
+    # # Detect rectangles
+    # rectangles_image1 = Similarity.findcounter.detect_rectangles(in_sketch)
+    # rectangles_image2 = Similarity.findcounter.detect_rectangles(mat_sketch)
+
+    # # Get image dimensions
+    # image1_height, image1_width = in_Img.shape[:2]
+    # image2_height, image2_width = mat_Img.shape[:2]
+
+    # # Create feature vectors
+    # feature_vector_image1 = Similarity.findcounter.create_feature_vector(rectangles_image1, image1_width, image1_height)
+    # feature_vector_image2 = Similarity.findcounter.create_feature_vector(rectangles_image2, image2_width, image2_height)
+
+    # # Calculate similarities
+    # euclidean_dist, cosine_sim = Similarity.findcounter.calculate_similarity(feature_vector_image1, feature_vector_image2)
+    # Similarity.findcounter.plot_vectors(feature_vector_image1, feature_vector_image2)
+    # Similarity.findcounter.plot_similarity_scores(euclidean_dist, cosine_sim)
+
+    # print(f'Euclidean Distance: {euclidean_dist}')
+    # print(f'Cosine Similarity: {cosine_sim}')
+    # detect_edges_in = Similarity.findcounter.detect_edges(in_sketch)
+    # detect_edges_mat = Similarity.findcounter.detect_edges(mat_sketch)
+    # detect_lines_in = Similarity.findcounter.detect_lines(detect_edges_in)
+    # detect_lines_mat = Similarity.findcounter.detect_lines(detect_edges_mat)
+    # pattern_in = Similarity.findcounter.draw_lines(in_sketch, detect_lines_in)
+    # pattern_mat = Similarity.findcounter.draw_lines(mat_sketch, detect_lines_mat)
+    # cv2.imwrite('/code/Img/pattern_in.jpg', pattern_in)
+    # cv2.imwrite('/code/Img/pattern_mat.jpg', pattern_mat)
+    
     # px_block = Similarity.ssim_similarity.feature_matching_with_blocks(in_sketch, mat_sketch)
     # print(px_V)
     # Feature matching
