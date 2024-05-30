@@ -105,10 +105,10 @@ def feature_matching(img1, img2):
     img1 = resize_with_aspect_ratio(img1, target_size)
     img2 = resize_with_aspect_ratio(img2, target_size)
     # ORB 파라미터 조정
-    scaleFactors = [1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
-    nlevelss = range(8, 12, 1)
-    edgeThresholds = range(20, 50, 1)
-    patchSizes = range(20, 50, 1)
+    scaleFactors = [1.2] #, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0
+    nlevelss = [8] # range(8, 12, 1)
+    edgeThresholds = range(31, 50, 1) # 20~50
+    patchSizes = range(31, 50, 1) # 20~50
     
     import itertools
     for pair in itertools.product(scaleFactors, nlevelss):
