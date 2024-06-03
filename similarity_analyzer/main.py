@@ -51,85 +51,32 @@ def mainDef( input_source : str, match_source : str ):
     in_sketch = Boundary.Boundary_module.ImgBoundarySketch(in_Img, in_out_data)        
     mat_sketch = Boundary.Boundary_module.ImgBoundarySketch(mat_Img, mat_out_data)
     
-    px_V = Similarity.jaccard_similarity.px_similarity(in_sketch, mat_sketch)
-    px_ssim = Similarity.ssim_similarity.ssim_similarity_calculator(in_sketch, mat_sketch)
-    px_orb = Similarity.ssim_similarity.feature_matching_with_shi_tomasi(in_sketch, mat_sketch)
-    px_FID = Similarity.FID.FID_score(in_sketch, mat_sketch)
-    
-    # # Detect rectangles
-    # rectangles_image1 = Similarity.findcounter.detect_rectangles(in_sketch)
-    # rectangles_image2 = Similarity.findcounter.detect_rectangles(mat_sketch)
 
-    # # Get image dimensions
-    # image1_height, image1_width = in_Img.shape[:2]
-    # image2_height, image2_width = mat_Img.shape[:2]
+    in_origin_width, in_origin_height = in_sketch.shape[:2]
+    mat_origin_width, mat_origin_height = mat_sketch.shape[:2]
+    react_in_sketch = Boundary.Boundary_module.create_patterned_image( rect_params = in_out_data, origin_width=in_origin_height, origin_height=in_origin_width)
+    react_mat_sketch = Boundary.Boundary_module.create_patterned_image( rect_params = mat_out_data, origin_width=mat_origin_height, origin_height=mat_origin_width)
+    # cv2.imwrite('/code/Img/react_in_sketch.jpg', react_in_sketch)
+    # cv2.imwrite('/code/Img/react_mat_sketch.jpg', react_mat_sketch)
+    react_ssim = Similarity.ssim_similarity.ssim_similarity_calculator(react_in_sketch, react_mat_sketch)
 
-    # # Create feature vectors
-    # feature_vector_image1 = Similarity.findcounter.create_feature_vector(rectangles_image1, image1_width, image1_height)
-    # feature_vector_image2 = Similarity.findcounter.create_feature_vector(rectangles_image2, image2_width, image2_height)
-
-    # # Calculate similarities
-    # euclidean_dist, cosine_sim = Similarity.findcounter.calculate_similarity(feature_vector_image1, feature_vector_image2)
-    # Similarity.findcounter.plot_vectors(feature_vector_image1, feature_vector_image2)
-    # Similarity.findcounter.plot_similarity_scores(euclidean_dist, cosine_sim)
-
-    # print(f'Euclidean Distance: {euclidean_dist}')
-    # print(f'Cosine Similarity: {cosine_sim}')
-    # detect_edges_in = Similarity.findcounter.detect_edges(in_sketch)
-    # detect_edges_mat = Similarity.findcounter.detect_edges(mat_sketch)
-    # detect_lines_in = Similarity.findcounter.detect_lines(detect_edges_in)
-    # detect_lines_mat = Similarity.findcounter.detect_lines(detect_edges_mat)
-    # pattern_in = Similarity.findcounter.draw_lines(in_sketch, detect_lines_in)
-    # pattern_mat = Similarity.findcounter.draw_lines(mat_sketch, detect_lines_mat)
-    # cv2.imwrite('/code/Img/pattern_in.jpg', pattern_in)
-    # cv2.imwrite('/code/Img/pattern_mat.jpg', pattern_mat)
-    
-    # px_block = Similarity.ssim_similarity.feature_matching_with_blocks(in_sketch, mat_sketch)
-    # print(px_V)
-    # Feature matching
-    
     num_matches = 0
-    # Resize images to the same size
-    # size = (800, 600)
-    # processed_image1 = cv2.resize(in_sketch, size)
-    # processed_image2 = cv2.resize(mat_sketch, size)
 
-    # Convert to grayscale for SSIM calculation
-    # processed_image1_gray = cv2.cvtColor(in_sketch, cv2.COLOR_BGR2GRAY)
-    # processed_image2_gray = cv2.cvtColor(mat_sketch, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite('/code/Img/in_sketch.jpg', in_sketch)
-    cv2.imwrite('/code/Img/mat_sketch.jpg', mat_sketch)
-    img_matches, num_matches = Similarity.ssim_similarity.feature_matching(in_sketch, mat_sketch)
+    print("reacting calculator")
+    _, _, similarity_orb_ratio = Similarity.ssim_similarity.feature_matching(react_in_sketch, react_mat_sketch, in_out_data, mat_out_data)
     
-    if img_matches is not None:
-        print(f'Number of matches: {num_matches}')
-        # Normalize the ORB match score
-        keypoints1 = cv2.ORB_create().detect(in_sketch, None)
-        keypoints2 = cv2.ORB_create().detect(mat_sketch, None)
-        max_possible_matches = min(len(keypoints1), len(keypoints2))
-        orb_similarity = num_matches / max_possible_matches if max_possible_matches > 0 else 0
-        print(f'ORB Similarity: {orb_similarity}')
-    else:
-        num_matches = 0
-        orb_similarity = 0
-        print("Feature matching could not be performed.")
-    # combined_similarity = Similarity.ssim_similarity.calculate_combined_similarity(in_sketch, mat_sketch, (220, 220, 200), (105, 105, 105), weight1=0.9, weight2=0.1, weight_ssim=0.5, weight_orb=0.5)
-
-    # Normalize the ORB match score
-    # Assuming maximum number of possible matches is min(number of keypoints in img1, img2)
-    keypoints1 = cv2.ORB_create().detect(in_sketch, None)
-    keypoints2 = cv2.ORB_create().detect(mat_sketch, None)
-    max_possible_matches = min(len(keypoints1), len(keypoints2))
-    orb_similarity = num_matches / max_possible_matches if max_possible_matches > 0 else 0
-    print(f'ORB Similarity: {orb_similarity}')
-
-    # Combine SSIM and ORB scores
-    # Assign weights to SSIM and ORB similarities
-    weight_ssim = 0.5
-    weight_orb = 0.5
-    combined_similarity = (weight_ssim * px_ssim) + (weight_orb * orb_similarity)
+    
+    weight_ssim = 0.3
+    weight_orb = 0.7
+    combined_similarity = 0
+    print(f'{similarity_orb_ratio} : similarity_orb_ratio, {react_ssim} : react_ssim')
+    combined_similarity = (weight_ssim * react_ssim) + (weight_orb * similarity_orb_ratio)
+    if combined_similarity > 1:
+        combined_similarity = 1
+    elif combined_similarity < 0:
+        combined_similarity = 0 
     print(f'Combined Similarity: {combined_similarity}')
-    return {"value " : px_ssim}
+    return {'Combined Similarity:', combined_similarity}
 
 
 

@@ -42,8 +42,8 @@ def ssim_similarity_calculator(image1, image2):
     cv2.imwrite('/code/Img/a4.jpg', image2)
     
     
-    image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
-    image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+    # image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+    # image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
     
     print(image1.shape, "<======size1")
     print(image2.shape, "<======size2")
@@ -63,113 +63,175 @@ def ssim_similarity_calculator(image1, image2):
     print("SSIM 유사도:", ssim_similarity)   # -1 ~ 1 사이값
     return ssim_similarity
 
-def feature_matching(img1, img2):
-    # target_size = (640, 640)
-
-    # img1 = resize_with_aspect_ratio(img1, target_size)
-    # img2 = resize_with_aspect_ratio(img2, target_size)
-    # list1 = []
-    # list2 = []
-    # size = []
-    # list1 = img1.shape
-    # list2 = img2.shape
-    # if list1[0] >= list2[0]:
-    #     size.append(list1[0])
-    # else:
-    #     size.append(list2[0])
-        
-    # if list1[1] >= list2[1]:
-    #     size.append(list1[1])
-    # else:
-    #     size.append(list2[1])
-    
-    
-    img1 = cv2.resize(img1, (1920, 640))
-    img2 = cv2.resize(img2, (1920, 640))
+def feature_matching(img1, img2, in_rect_params, mat_rect_params):
+    in_rect_params = len([item for item in in_rect_params if item[0] == 2]) * 4
+    mat_rect_params = len([item for item in mat_rect_params if item[0] == 2]) * 4
+    # img1 = cv2.resize(img1, (1920, 640))
+    # img2 = cv2.resize(img2, (1920, 640))
     print(img1.shape, img2.shape, "여기가 사이즈")
     
     # ORB 파라미터 조정
     scaleFactors = [1.2] #, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0
     nlevelss = [8] # range(8, 12, 1)
-    edgeThresholds = range(31, 50, 1) # 20~50
-    patchSizes = range(31, 50, 1) # 20~50
-    
+    edgeThresholds = range(31, 40, 1) # 20~50
+    patchSizes = range(31, 40, 1) # 20~50
+    max_distance= [50, 60, 70, 80, 90, 100]
+    ssim_value = ssim_similarity_calculator(img1, img2)
+    import itertools
+    for pair in itertools.product(scaleFactors, nlevelss, max_distance):
+        for edgeThreshold, patchSize in zip(edgeThresholds, patchSizes):
+            print(f'/code/Img/img_matches_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}')
+
+            orb = cv2.ORB_create(nfeatures=500, 
+                                scaleFactor=pair[0], 
+                                nlevels=pair[1], 
+                                edgeThreshold=edgeThreshold, 
+                                firstLevel=0, 
+                                WTA_K=2, 
+                                scoreType=cv2.ORB_HARRIS_SCORE, 
+                                patchSize=patchSize, 
+                                fastThreshold=30)
+
+            kp1, des1 = orb.detectAndCompute(img1, None)
+            kp2, des2 = orb.detectAndCompute(img2, None)
+            des1_manual = np.array([computeRectangleDescriptor(img1, kp, patchSize) for kp in kp1])
+            des2_manual = np.array([computeRectangleDescriptor(img2, kp, patchSize) for kp in kp2])
+            des1_manual_test = np.array([computeRectangleDescriptor1(img1, kp) for kp in kp1])
+            des2_manual_test = np.array([computeRectangleDescriptor1(img2, kp) for kp in kp2])
+
+            matches = custom_bf_match(des1_manual, kp1, des2_manual, kp2, max_distance=pair[2])
+            matches = sorted(matches, key=lambda x: x.distance)
+            print(f'Number of matches: {len(matches)}')
+
+            img_keypoints1 = cv2.drawKeypoints(img1, kp1, None, color=(0, 255, 0))
+            img_keypoints2 = cv2.drawKeypoints(img2, kp2, None, color=(0, 255, 0))
+            cv2.imwrite(f'/code/Img/keypoints/img_keypoints1_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', img_keypoints1)
+            cv2.imwrite(f'/code/Img/keypoints/img_keypoints2_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', img_keypoints2)
+
+            img_descriptors1 = img1.copy()
+            img_descriptors2 = img2.copy()
+            for kp in kp1:
+                x, y = kp.pt
+                cv2.rectangle(img_descriptors1, (int(x - patchSize / 2), int(y - patchSize / 2)),
+                              (int(x + patchSize / 2), int(y + patchSize / 2)), (255, 0, 0), 1)
+            cv2.imwrite(f'/code/Img/descriptors/img_descriptors_SF1_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', img_descriptors1)
+            for kp in kp2:
+                x, y = kp.pt
+                cv2.rectangle(img_descriptors2, (int(x - patchSize / 2), int(y - patchSize / 2)),
+                              (int(x + patchSize / 2), int(y + patchSize / 2)), (255, 0, 0), 1)
+            cv2.imwrite(f'/code/Img/descriptors/img_descriptors_SF2_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', img_descriptors2)
+            img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, singlePointColor=(0, 255, 0), matchColor=(0, 0, 255), flags=0)
+            # Calculate similarity in_rect_params, mat_rect_params
+            num_rectangle_points = min(in_rect_params, mat_rect_params)
+            
+            num_keypoints = min(len(kp1), len(kp2))
+            num_matches = len(matches)
+            similarity_ratio = num_matches / num_rectangle_points if num_rectangle_points > 0 else 0
+            print(f'Keypoint 1 Number : {len(kp1)}')
+            print(f'Keypoint 2 Number : {len(kp2)}')
+            print(f'Number of matches: {num_matches}')
+            print(f'Similarity ratio: {similarity_ratio:.2f}')
+            print(f'SSIM Similarity: {ssim_value:.2f}')
+            cv2.imwrite(f'/code/Img/matches/img_matches_custom_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', img_matches)
+
+            bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+            matches = bf.match(des1_manual_test, des2_manual_test)
+            matches = sorted(matches, key=lambda x: x.distance)
+            # print(f'Number of matches: {len(matches)}')
+
+            img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, singlePointColor=(0, 255, 0), matchColor=(0, 0, 255), flags=0)
+            cv2.imwrite(f'/code/Img/bf/img_matches_BFMatcher_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', img_matches)
+
+            FLANN_INDEX_LSH = 6
+            index_params = dict(algorithm=FLANN_INDEX_LSH, table_number=6, key_size=12, multi_probe_level=1)
+            search_params = dict(checks=32)
+            matcher = cv2.FlannBasedMatcher(index_params, search_params)
+            matches = matcher.match(des1_manual_test, des2_manual_test)
+
+            res = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+            res1 = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, flags=0)
+
+            cv2.imwrite(f'/code/Img/res/res1_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', res)
+            cv2.imwrite(f'/code/Img/res/res2_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', res1)
+            Combine_Similarity_Value = (ssim_value * 0.3) + (similarity_ratio * 0.7)
+            # Store results
+            results = {}
+            key = f'SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD_{pair[2]}'
+            results[key] = Combine_Similarity_Value
+            print(f'Combine_Similarity_Value : {Combine_Similarity_Value}')
+    print(results, 'dict results')
+
+    # Find the highest value and its corresponding key
+    max_key = max(results, key=results.get)
+    max_value = results[max_key]
+    print(f'Highest Combine Similarity Value: {max_value} with key: {max_key}')
+    return img_matches, len(matches), similarity_ratio
     # import itertools
-    # for pair in itertools.product(scaleFactors, nlevelss):
+    # for pair in itertools.product(scaleFactors, nlevelss, max_distance):
     #     for edgeThreshold, patchSize in zip(edgeThresholds, patchSizes):
             
     #         print(f'/code/Img/img_matches_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}')
             
-    orb = cv2.ORB_create(nfeatures=500, 
-                        scaleFactor=1.2, 
-                        nlevels=8, 
-                        edgeThreshold=40, 
-                        firstLevel=0, 
-                        WTA_K=2, 
-                        scoreType=cv2.ORB_HARRIS_SCORE, 
-                        patchSize=40, 
-                        fastThreshold=20)
-    
-    kp1, des1 = orb.detectAndCompute(img1, None)
-    kp2, des2 = orb.detectAndCompute(img2, None)
-    des1_manual = np.array([computeRectangleDescriptor(img1, kp) for kp in kp1])
-    des2_manual = np.array([computeRectangleDescriptor(img2, kp) for kp in kp2])
-    # kp1 = filter_keypoints(kp1)
-    # kp2 = filter_keypoints(kp2)
-    # matches = custom_bf_match(des1_manual, des2_manual)
-    matches = custom_bf_match(des1_manual, kp1, des2_manual, kp2, max_distance=50)
-    matches = sorted(matches, key=lambda x: x.distance)
-    print(f'Number of matches: {len(matches)}')
-    img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, flags=cv2.DRAW_MATCHES_FLAGS_NOT_DRAW_SINGLE_POINTS)
-    cv2.imwrite(f'/code/Img/custom/img_matches_custom.jpg', img_matches)
-    # cv2.imwrite(f'/code/Img/custom/img_matches_custom_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}.jpg', img_matches)
-    # Ensure descriptors are not None and are continuous
-    if des1 is not None:
-        des1 = np.ascontiguousarray(des1)
-    if des2 is not None:
-        des2 = np.ascontiguousarray(des2)
+    #         orb = cv2.ORB_create(nfeatures=500, 
+    #                             scaleFactor=pair[0], 
+    #                             nlevels=pair[1], 
+    #                             edgeThreshold=edgeThreshold, 
+    #                             firstLevel=0, 
+    #                             WTA_K=2, 
+    #                             scoreType=cv2.ORB_HARRIS_SCORE, 
+    #                             patchSize=patchSize, 
+    #                             fastThreshold=30)
+            
+    #         kp1, des1 = orb.detectAndCompute(img1, None)
+    #         kp2, des2 = orb.detectAndCompute(img2, None)
+    #         des1_manual = np.array([computeRectangleDescriptor(img1, kp, patchSize) for kp in kp1])
+    #         des2_manual = np.array([computeRectangleDescriptor(img2, kp, patchSize) for kp in kp2])
+    #         des1_manual_test = np.array([computeRectangleDescriptor1(img1, kp) for kp in kp1])
+    #         des2_manual_Test = np.array([computeRectangleDescriptor1(img2, kp) for kp in kp2])
+    #         # kp1 = filter_keypoints(kp1)
+    #         # kp2 = filter_keypoints(kp2)
+    #         # matches = custom_bf_match(des1_manual, des2_manual)
+    #         matches = custom_bf_match(des1_manual, kp1, des2_manual, kp2, max_distance=pair[2])
+    #         matches = sorted(matches, key=lambda x: x.distance)
+    #         print(f'Number of matches: {len(matches)}')
+    #         img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, singlePointColor=(0,255,0), matchColor=(0,0,255) ,flags=0)
+    #         cv2.imwrite(f'/code/Img/custom/img_matches_custom_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}.jpg', img_matches)
+            
+    #         bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+            
+    #         matches = bf.match(des1_manual_test, des2_manual_Test)
+    #         matches = sorted(matches, key=lambda x: x.distance)
 
-    if des1 is None or des2 is None:
-        print("No descriptors found in one of the images.")
-        # continue
-        # return None, 0
-    
-    # 인덱스 파라미터 설정 ---①
-    # FLANN_INDEX_LSH = 6
-    
-    # index_params= dict(algorithm = FLANN_INDEX_LSH,
-    #                 table_number = 6,
-    #                 key_size = 12,
-    #                 multi_probe_level = 1)
-    
-    # search_params=dict(checks=32)
-    # matcher = cv2.FlannBasedMatcher(index_params, search_params)
-    # matches = matcher.match(kp1, kp2)
-    # # 매칭 그리기
-    # res = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, \
-    #             flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-    
-    # cv2.imwrite('/code/Img/res1.jpg', res)
-    
-    # 디버깅 정보 출력
-    print(f'Number of keypoints in image 1: {len(kp1) if kp1 is not None else 0}')
-    print(f'Number of keypoints in image 2: {len(kp2) if kp2 is not None else 0}')
+    #         # 디버깅 정보 출력
+    #         print(f'Number of matches: {len(matches)}')
 
-    if des1 is None or des2 is None:
-        print("No descriptors found in one of the images.")
-        return None, 0
+    #         img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, singlePointColor=(0,255,0), matchColor=(0,0,255) ,flags=0)
+    #         cv2.imwrite(f'/code/Img/bf/img_matches_BFMatcher_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}.jpg', img_matches)
+    #         # cv2.imwrite(f'/code/Img/custom/img_matches_custom_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}.jpg', img_matches)
+    #         # Ensure descriptors are not None and are continuous
+            
+    #         # 인덱스 파라미터 설정 ---①
+    #         FLANN_INDEX_LSH = 6
 
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    
-    matches = bf.match(des1, des2)
-    matches = sorted(matches, key=lambda x: x.distance)
+    #         index_params= dict(algorithm = FLANN_INDEX_LSH,
+    #                         table_number = 6,
+    #                         key_size = 12,
+    #                         multi_probe_level = 1)
 
-    # 디버깅 정보 출력
-    print(f'Number of matches: {len(matches)}')
+    #         search_params=dict(checks=32)
+    #         matcher = cv2.FlannBasedMatcher(index_params, search_params)
+    #         matches = matcher.match(des1_manual_test, des2_manual_Test)
+    #         # 매칭 그리기
+    #         res = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, \
+    #                     flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    #         res1 = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, \
+    #                     flags=0)
 
-    img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, flags=cv2.DRAW_MATCHES_FLAGS_NOT_DRAW_SINGLE_POINTS)
-    # cv2.imwrite(f'/code/Img/bf/img_matches_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}.jpg', img_matches)
-    return img_matches, len(matches)
+    #         cv2.imwrite(f'/code/Img/res/res1_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}.jpg', res)
+    #         cv2.imwrite(f'/code/Img/res/res2_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}.jpg', res1)
+
+
+    # return img_matches, len(matches)
 
 
 def feature_matching_with_shi_tomasi(img1, img2):
@@ -291,8 +353,29 @@ def resize_with_aspect_ratio(image, target_size):
     
     return new_image
 
+def computeRectangleDescriptor1(image, keypoint, patch_size=31):
+    if len(image.shape) == 3 and image.shape[2] == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    center = keypoint.pt
+    angle = keypoint.angle * (np.pi / 180.0)
+    cos_angle = np.cos(angle)
+    sin_angle = np.sin(angle)
 
-def computeRectangleDescriptor(image, keypoint, patch_size=31):
+    half_size = patch_size // 2
+    descriptor = np.zeros((patch_size, patch_size), dtype=np.uint8)
+
+    for i in range(patch_size):
+        for j in range(patch_size):
+            x = (i - half_size) * cos_angle - (j - half_size) * sin_angle + center[0]
+            y = (i - half_size) * sin_angle + (j - half_size) * cos_angle + center[1]
+            if 0 <= x < image.shape[1] and 0 <= y < image.shape[0]:
+                descriptor[i, j] = image[int(y), int(x)]
+            else:
+                descriptor[i, j] = 0
+
+    return descriptor.flatten()
+
+def computeRectangleDescriptor(image, keypoint, patch_size):
     # 만약 컬러 이미지라면 그레이스케일로 변환
     if len(image.shape) == 3 and image.shape[2] == 3:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -312,32 +395,7 @@ def computeRectangleDescriptor(image, keypoint, patch_size=31):
 
     return descriptor.flatten() 
 
-def custom_bf_match(descriptors1, keypoints1, descriptors2, keypoints2, max_distance):
-    matches = []
-    for i in range(descriptors1.shape[0]):
-        best_match_index = -1
-        best_match_distance = float('inf')
-        for j in range(descriptors2.shape[0]):
-            # 특징점 간의 위치 거리 계산
-            pt1 = keypoints1[i].pt
-            pt2 = keypoints2[j].pt
-            location_distance = np.sqrt((pt1[0] - pt2[0])**2 + (pt1[1] - pt2[1])**2)
-            
-            if location_distance > max_distance:
-                continue
-            
-            # 해밍 거리 계산
-            distance = np.sum(descriptors1[i] != descriptors2[j]).astype(float)
-            if distance < best_match_distance:
-                best_match_distance = distance
-                best_match_index = j
-        if best_match_index != -1:
-            matches.append(cv2.DMatch(i, best_match_index, best_match_distance))
-    return matches
-
 # def custom_bf_match(descriptors1, keypoints1, descriptors2, keypoints2, max_distance):
-#     eps = 30
-#     min_samples = 1
 #     matches = []
 #     for i in range(descriptors1.shape[0]):
 #         best_match_index = -1
@@ -353,37 +411,46 @@ def custom_bf_match(descriptors1, keypoints1, descriptors2, keypoints2, max_dist
             
 #             # 해밍 거리 계산
 #             distance = np.sum(descriptors1[i] != descriptors2[j]).astype(float)
+#             # print(distance, "<========distance\n", best_match_distance,"<=======best_match")
 #             if distance < best_match_distance:
 #                 best_match_distance = distance
 #                 best_match_index = j
 #         if best_match_index != -1:
 #             matches.append(cv2.DMatch(i, best_match_index, best_match_distance))
+#     return matches
+
+def custom_bf_match(descriptors1, keypoints1, descriptors2, keypoints2, max_distance, min_distance=10):
+    matches = []
+    matched_pts1 = []
+    matched_pts2 = []
+
+    for i in range(descriptors1.shape[0]):
+        best_match_index = -1
+        best_match_distance = float('inf')
+        for j in range(descriptors2.shape[0]):
+            # 특징점 간의 위치 거리 계산
+            pt1 = keypoints1[i].pt
+            pt2 = keypoints2[j].pt
+            location_distance = np.sqrt((pt1[0] - pt2[0])**2 + (pt1[1] - pt2[1])**2)
+            
+            if location_distance > max_distance:
+                continue
+            
+            # 해밍 거리 계산
+            distance = np.sum(descriptors1[i] != descriptors2[j]).astype(float)
+            
+            # 이미 매칭된 키포인트와의 거리 확인
+            if any(np.sqrt((pt1[0] - mp[0])**2 + (pt1[1] - mp[1])**2) < min_distance for mp in matched_pts1) or \
+               any(np.sqrt((pt2[0] - mp[0])**2 + (pt2[1] - mp[1])**2) < min_distance for mp in matched_pts2):
+                continue
+            
+            if distance < best_match_distance:
+                best_match_distance = distance
+                best_match_index = j
+        
+        if best_match_index != -1:
+            matches.append(cv2.DMatch(i, best_match_index, best_match_distance))
+            matched_pts1.append(keypoints1[i].pt)
+            matched_pts2.append(keypoints2[best_match_index].pt)
     
-#     # 매칭 결과를 클러스터링하여 겹치는 부분 제거
-#     if matches:
-#         match_coords1 = np.array([keypoints1[m.queryIdx].pt for m in matches])
-#         match_coords2 = np.array([keypoints2[m.trainIdx].pt for m in matches])
-        
-#         # 좌표를 사용하여 클러스터링
-#         clustering1 = DBSCAN(eps=max_distance, min_samples=1).fit(match_coords1)
-#         clustering2 = DBSCAN(eps=max_distance, min_samples=1).fit(match_coords2)
-        
-#         labels1 = clustering1.labels_
-#         labels2 = clustering2.labels_
-
-#         unique_labels1 = set(labels1)
-#         unique_labels2 = set(labels2)
-
-#         unique_matches = []
-
-#         for label in unique_labels1:
-#             if label == -1:
-#                 continue
-#             indices = np.where(labels1 == label)[0]
-#             if len(indices) > 0:
-#                 best_match_index = indices[0]  # 첫 번째 매칭만 선택
-#                 unique_matches.append(matches[best_match_index])
-
-#         return unique_matches
-#     else:
-#         return []
+    return matches

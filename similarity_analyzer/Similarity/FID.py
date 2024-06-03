@@ -1,4 +1,4 @@
-import pytorch_fid_wrapper as pfw
+# import pytorch_fid_wrapper as pfw
 import torch  
 from torchvision import transforms
 from torchvision.io import read_image
@@ -41,8 +41,8 @@ def FID_score(img1, img2, output_size=299):
     batch = torch.stack([img1, img2]).to(device)
 
     # FID 설정 및 계산
-    pfw.set_config(batch_size=2, device=device)
-    fid_score = pfw.fid(batch, batch)
+    # pfw.set_config(batch_size=2, device=device)
+    # fid_score = pfw.fid(batch, batch)
     print("FID score:", fid_score)
     return fid_score
 

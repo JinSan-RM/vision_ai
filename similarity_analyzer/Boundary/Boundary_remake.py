@@ -38,3 +38,32 @@ cv2.imshow('Image 1', image1)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+def create_patterned_image(img_width, img_height, margin_x, margin_y, 
+                           rect_params, border_thicknesses, 
+                           pattern_interval_x, pattern_interval_y, fill_color):
+    """
+    rect_params: 리스트 [(min_x, min_y, max_x, max_y)] 형태로 각 사각형의 좌표를 전달
+    """
+    # 빈 이미지 생성 (회색 배경)
+    image = np.full((img_height, img_width, 3), 128, dtype=np.uint8)
+
+    for i, (cls, min_x, min_y, max_x, max_y,_) in enumerate(rect_params):
+
+
+        start_point = (min_x + margin_x, min_y + margin_y)
+        end_point = (max_x + margin_x, max_y + margin_y)
+
+        # 사각형 그리기
+        cv2.rectangle(image, start_point, end_point, (0, 0, 0), border_thickness)
+
+    # 패턴 만들기
+    pattern = np.ones((img_height, img_width, 3), dtype=np.uint8) * 255
+    pattern[::pattern_interval_y, ::pattern_interval_x] = 0
+    image = cv2.bitwise_and(image, pattern)
+
+    # 색있는 상자 대입
+    points = np.array([[[100, 100], [200, 100], [200, 200], [100, 200]]], dtype=np.int32)
+    cv2.fillConvexPoly(image, points, fill_color)
+
+    return image
