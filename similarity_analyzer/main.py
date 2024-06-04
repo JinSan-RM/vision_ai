@@ -48,8 +48,15 @@ def mainDef( input_source : str, match_source : str ):
     in_out_data = in_out_data[0]
     mat_out_data = mat_out_data[0]
     
-    in_sketch = Boundary.Boundary_module.ImgBoundarySketch(in_Img, in_out_data)        
-    mat_sketch = Boundary.Boundary_module.ImgBoundarySketch(mat_Img, mat_out_data)
+    # in_sketch = Boundary.Boundary_module.ImgBoundarySketch(in_Img, in_out_data)        
+    # mat_sketch = Boundary.Boundary_module.ImgBoundarySketch(mat_Img, mat_out_data)
+    
+    in_sketch = Boundary.Boundary_module.ImgBoundaryRemake(in_Img, in_out_data)        
+    mat_sketch = Boundary.Boundary_module.ImgBoundaryRemake(mat_Img, mat_out_data)
+    
+    #================================
+    # SIMM & ORB similarity
+    #================================
     
     px_V = Similarity.jaccard_similarity.px_similarity(in_sketch, mat_sketch)
     px_ssim = Similarity.ssim_similarity.ssim_similarity_calculator(in_sketch, mat_sketch)
