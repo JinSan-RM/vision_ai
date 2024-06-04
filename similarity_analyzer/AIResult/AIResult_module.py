@@ -36,7 +36,7 @@ def classbox(results):
             origin_minY = minY * imgHeight
             origin_maxX = maxX * imgWidth
             origin_maxY = maxY * imgHeight
-            boxData = [classNum, origin_minX, origin_minY, origin_maxX, origin_maxY, conf]
+            boxData = [classNum, int(origin_minX), int(origin_minY), int(origin_maxX), int(origin_maxY), conf]
             data.append(boxData)
 
         dataList.append(data)
