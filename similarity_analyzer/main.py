@@ -48,10 +48,14 @@ def mainDef( input_source : str, match_source : str ):
     in_out_data = in_out_data[0]
     mat_out_data = mat_out_data[0]
     
+    in_text_boxes = AIResult.AIResult_module.text_box_detector(in_out_data)
+    mat_text_boxes = AIResult.AIResult_module.text_box_detector(mat_out_data)
+    similarity_text_ratio = Similarity.text_box_similarity_calculator(in_text_boxes, mat_text_boxes)
+    
     react_in_sketch = Boundary.Boundary_module.create_patterned_image( rect_params = in_out_data)
     react_mat_sketch = Boundary.Boundary_module.create_patterned_image( rect_params = mat_out_data)
     # cv2.imwrite('/code/Img/react_in_sketch.jpg', react_in_sketch)
-    # cv2.imwrite('/code/Img/react_mat_sketch.jpg', react_mat_sketch)
+    # cv2.imwrite('code/Img/react_mat_sketch.jpg', react_mat_sketch)
     react_ssim = Similarity.ssim_similarity.ssim_similarity_calculator(react_in_sketch, react_mat_sketch)
 
 
@@ -59,11 +63,12 @@ def mainDef( input_source : str, match_source : str ):
     _, _, similarity_orb_ratio = Similarity.ssim_similarity.feature_matching(react_in_sketch, react_mat_sketch, in_out_data, mat_out_data)
     
     
-    weight_ssim = 0.3
-    weight_orb = 0.7
+    weight_txt_boxes = 0.15
+    weight_ssim = 0.275
+    weight_orb = 0.575 # 0.7
     combined_similarity = 0
-    print(f'{similarity_orb_ratio} : similarity_orb_ratio, {react_ssim} : react_ssim')
-    combined_similarity = (weight_ssim * react_ssim) + (weight_orb * similarity_orb_ratio)
+    print(f'similarity_text_ratio : {similarity_text_ratio}\nsimilarity_orb_ratio : {similarity_orb_ratio} \nreact_ssim : {react_ssim}')
+    combined_similarity = (weight_txt_boxes * similarity_text_ratio) + (weight_ssim * react_ssim) + (weight_orb * similarity_orb_ratio)
     if combined_similarity > 1:
         combined_similarity = 1
     elif combined_similarity < 0:

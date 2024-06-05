@@ -1,1 +1,1 @@
-from .AIResult_module import classbox, process_boxes
+from .AIResult_module import classbox, process_boxes, text_box_detector

@@ -140,7 +140,7 @@ def feature_matching(img1, img2, in_rect_params, mat_rect_params):
             # print(f'Number of matches: {len(matches)}')
 
             img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, singlePointColor=(0, 255, 0), matchColor=(0, 0, 255), flags=0)
-            cv2.imwrite(f'/code/Img/bf/img_matches_BFMatcher_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', img_matches)
+            cv2.imwrite(f'/cod/Img/bf/img_matches_BFMatcher_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', img_matches)
 
             FLANN_INDEX_LSH = 6
             index_params = dict(algorithm=FLANN_INDEX_LSH, table_number=6, key_size=12, multi_probe_level=1)
@@ -153,12 +153,12 @@ def feature_matching(img1, img2, in_rect_params, mat_rect_params):
 
             cv2.imwrite(f'/code/Img/res/res1_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', res)
             cv2.imwrite(f'/code/Img/res/res2_SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD{pair[2]}.jpg', res1)
-            Combine_Similarity_Value = (ssim_value * 0.3) + (similarity_ratio * 0.7)
+            Combine_Similarity_Value_by_SSIM_n_ORB = (ssim_value * 0.3) + (similarity_ratio * 0.7)
             # Store results
             results = {}
             key = f'SF_{pair[0]}_NL_{pair[1]}_ET_{edgeThreshold}_PS_{patchSize}_MD_{pair[2]}'
-            results[key] = Combine_Similarity_Value
-            print(f'Combine_Similarity_Value : {Combine_Similarity_Value}')
+            results[key] = Combine_Similarity_Value_by_SSIM_n_ORB
+            print(f'Combine_Similarity_Value_by_SSIM_n_ORB : {Combine_Similarity_Value_by_SSIM_n_ORB}')
     print(results, 'dict results')
 
     # Find the highest value and its corresponding key
@@ -166,6 +166,11 @@ def feature_matching(img1, img2, in_rect_params, mat_rect_params):
     max_value = results[max_key]
     print(f'Highest Combine Similarity Value: {max_value} with key: {max_key}')
     return img_matches, len(matches), similarity_ratio
+
+#=======================================
+#  itertools 사용하여 전체 경우의 수 대입
+#=======================================
+
     # import itertools
     # for pair in itertools.product(scaleFactors, nlevelss, max_distance):
     #     for edgeThreshold, patchSize in zip(edgeThresholds, patchSizes):
@@ -394,6 +399,10 @@ def computeRectangleDescriptor(image, keypoint, patch_size):
                 descriptor[i, j] = 0  # 경계 밖이면 0으로 설정
 
     return descriptor.flatten() 
+
+#=======================================
+#  custom_bf_match 방식
+#=======================================
 
 # def custom_bf_match(descriptors1, keypoints1, descriptors2, keypoints2, max_distance):
 #     matches = []

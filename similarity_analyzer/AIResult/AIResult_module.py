@@ -53,3 +53,9 @@ def process_boxes(boxes_list, isImage=None):
         
     return processed_boxes
 
+def text_box_detector(rect_params):
+    
+    rect_params = [item for item in rect_params if item[0] == 1]
+    num_of_text_boxes = len(rect_params)
+    
+    return num_of_text_boxes

@@ -31,7 +31,7 @@ cv2.fillConvexPoly(image1, points, (100, 100, 100))
 # image1 = cv2.copyMakeBorder(image1, 20, 20, 10, 10, cv2.BORDER_CONSTANT, value=color)
 
 # 이미지 저장
-cv2.imwrite('/Img/rectangle_image1.jpg', image1)
+cv2.imwrite('code/Img/rectangle_image1.jpg', image1)
 
 # 이미지 보여주기
 cv2.imshow('Image 1', image1)
