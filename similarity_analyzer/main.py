@@ -48,19 +48,12 @@ def mainDef( input_source : str, match_source : str ):
     in_out_data = in_out_data[0]
     mat_out_data = mat_out_data[0]
     
-    in_sketch = Boundary.Boundary_module.ImgBoundarySketch(in_Img, in_out_data)        
-    mat_sketch = Boundary.Boundary_module.ImgBoundarySketch(mat_Img, mat_out_data)
-    
-
-    in_origin_width, in_origin_height = in_sketch.shape[:2]
-    mat_origin_width, mat_origin_height = mat_sketch.shape[:2]
-    react_in_sketch = Boundary.Boundary_module.create_patterned_image( rect_params = in_out_data, origin_width=in_origin_height, origin_height=in_origin_width)
-    react_mat_sketch = Boundary.Boundary_module.create_patterned_image( rect_params = mat_out_data, origin_width=mat_origin_height, origin_height=mat_origin_width)
+    react_in_sketch = Boundary.Boundary_module.create_patterned_image( rect_params = in_out_data)
+    react_mat_sketch = Boundary.Boundary_module.create_patterned_image( rect_params = mat_out_data)
     # cv2.imwrite('/code/Img/react_in_sketch.jpg', react_in_sketch)
     # cv2.imwrite('/code/Img/react_mat_sketch.jpg', react_mat_sketch)
     react_ssim = Similarity.ssim_similarity.ssim_similarity_calculator(react_in_sketch, react_mat_sketch)
 
-    num_matches = 0
 
     print("reacting calculator")
     _, _, similarity_orb_ratio = Similarity.ssim_similarity.feature_matching(react_in_sketch, react_mat_sketch, in_out_data, mat_out_data)

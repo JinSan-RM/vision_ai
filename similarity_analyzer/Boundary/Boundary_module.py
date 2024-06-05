@@ -36,7 +36,7 @@ def ImgBoundarySketch(img, output_data):
     return img
     
     
-def create_patterned_image( rect_params, origin_width, origin_height):
+def create_patterned_image( rect_params ):
     """
     rect_params: 리스트 [(label, min_x, min_y, max_x, max_y, score)] 형태로 각 사각형의 좌표를 전달
     """
